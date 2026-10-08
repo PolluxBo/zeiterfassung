@@ -1,0 +1,317 @@
+<Window x:Class="Zeiterfassung.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Zeiterfassung" Height="860" Width="1200" MinWidth="940" MinHeight="620"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource BgBrush}"
+        FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource InkBrush}"
+        Icon="app.ico" PreviewKeyDown="Window_PreviewKeyDown" UseLayoutRounding="True">
+
+  <Grid Margin="22,16,22,6">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- Kopfzeile -->
+    <DockPanel Margin="0,0,0,14">
+      <Button DockPanel.Dock="Right" Style="{StaticResource Ghost}" Content="Einstellungen" Click="Settings_Click"/>
+      <TextBlock x:Name="StatusText" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0,0,16,0"
+                 Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold"/>
+      <TextBlock Text="Zeiterfassung" FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"/>
+    </DockPanel>
+
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="430"/>
+        <ColumnDefinition Width="18"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- Linke Spalte: Woche + Erfassung -->
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <DockPanel>
+                <Button DockPanel.Dock="Left" Style="{StaticResource IconBtn}" Content="‹" Click="PrevWeek_Click" ToolTip="Vorherige Woche"/>
+                <Button DockPanel.Dock="Right" Style="{StaticResource IconBtn}" Content="›" Click="NextWeek_Click" ToolTip="Nächste Woche"/>
+                <Button x:Name="KwLabel" Style="{StaticResource Flat}" HorizontalAlignment="Center" FontWeight="SemiBold" FontSize="15"
+                        Click="Today_Click" ToolTip="Zur aktuellen Woche"/>
+              </DockPanel>
+
+              <ItemsControl x:Name="DaysList" Margin="-3,12,-3,6">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><UniformGrid Columns="5"/></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource DayBtn}" Click="Day_Click">
+                      <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Wd}" FontSize="11" FontWeight="SemiBold" Opacity="0.75" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding DayNum}" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                              <Style.Triggers>
+                                <MultiDataTrigger>
+                                  <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsToday}" Value="True"/>
+                                    <Condition Binding="{Binding IsSelected}" Value="False"/>
+                                  </MultiDataTrigger.Conditions>
+                                  <Setter Property="Foreground" Value="{StaticResource StampBrush}"/>
+                                </MultiDataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Sum}" FontSize="11.5" FontFamily="{StaticResource NumFont}" Opacity="0.8" HorizontalAlignment="Center"/>
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <DockPanel>
+                <TextBlock x:Name="WeekTotal" DockPanel.Dock="Right" FontFamily="{StaticResource NumFont}" Foreground="{StaticResource MutedBrush}"/>
+                <TextBlock Text="Woche gesamt (Mo–Fr)" Foreground="{StaticResource MutedBrush}" FontSize="13"/>
+              </DockPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <DockPanel>
+                <TextBlock x:Name="FormDay" DockPanel.Dock="Right" Foreground="{StaticResource MutedBrush}" FontSize="12.5"/>
+                <TextBlock x:Name="FormTitle" Style="{StaticResource H2}" Text="NEUER EINTRAG"/>
+              </DockPanel>
+
+              <TextBlock Text="Kunde" Style="{StaticResource FieldLabel}"/>
+              <ComboBox x:Name="KundeBox" IsEditable="True" IsTextSearchEnabled="True" FontSize="15" Padding="8,7"/>
+              <WrapPanel x:Name="KundenChips" Margin="0,8,0,0"/>
+
+              <TextBlock Text="Zeitaufwand" Style="{StaticResource FieldLabel}" Margin="0,8,0,6"/>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Style="{StaticResource IconBtn}" Content="−" Click="Minus_Click" ToolTip="15 Minuten weniger"/>
+                <TextBlock x:Name="DurText" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontFamily="{StaticResource NumFont}" FontSize="30" FontWeight="SemiBold"/>
+                <Button Grid.Column="2" Style="{StaticResource IconBtn}" Content="+" Click="Plus_Click" ToolTip="15 Minuten mehr"/>
+              </Grid>
+              <WrapPanel x:Name="DurChips" Margin="0,10,0,0"/>
+
+              <TextBlock Text="Tätigkeit / Notiz (optional)" Style="{StaticResource FieldLabel}" Margin="0,8,0,6"/>
+              <TextBox x:Name="NotizBox" Style="{StaticResource Field}" AcceptsReturn="True" TextWrapping="Wrap"
+                       MinHeight="58" MaxHeight="130" VerticalScrollBarVisibility="Auto"/>
+
+              <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                <Button x:Name="SaveBtn" Style="{StaticResource Primary}" Content="Eintrag speichern" Click="Save_Click" MinWidth="170"
+                        ToolTip="Strg+S"/>
+                <Button x:Name="CancelBtn" Style="{StaticResource Ghost}" Content="Abbrechen" Click="Cancel_Click" Margin="8,0,0,0" Visibility="Collapsed"/>
+                <Button x:Name="DeleteBtn" Style="{StaticResource Ghost}" Content="Löschen" Click="Delete_Click" Margin="8,0,0,0"
+                        Foreground="{StaticResource DangerBrush}" Visibility="Collapsed"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Rechte Spalte: Übersichten + Versand -->
+      <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <Border x:Name="DayCard" Style="{StaticResource Card}">
+            <StackPanel>
+              <DockPanel Margin="0,0,0,8">
+                <TextBlock x:Name="DayTitle" DockPanel.Dock="Right" FontWeight="SemiBold" FontSize="16"/>
+                <TextBlock Style="{StaticResource H2}" Text="TAGESÜBERSICHT"/>
+              </DockPanel>
+
+              <TextBlock x:Name="DayEmpty" Style="{StaticResource Hint}" Margin="0,4,0,8"
+                         Text="Für diesen Tag ist noch nichts erfasst. Kunde und Zeit links eintragen und speichern."/>
+
+              <ItemsControl x:Name="DayEntries">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="8,10">
+                      <Border.Style>
+                        <Style TargetType="Border">
+                          <Setter Property="Background" Value="Transparent"/>
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                              <Setter Property="Background" Value="{StaticResource AccentSoftBrush}"/>
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </Border.Style>
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*"/>
+                          <ColumnDefinition Width="Auto"/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                          <TextBlock Text="{Binding Kunde}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                          <TextBlock Text="{Binding NotizText}" Foreground="{StaticResource MutedBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,2,0,0">
+                            <TextBlock.Style>
+                              <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                  <DataTrigger Binding="{Binding NotizEmpty}" Value="True">
+                                    <Setter Property="FontStyle" Value="Italic"/>
+                                    <Setter Property="Opacity" Value="0.7"/>
+                                  </DataTrigger>
+                                </Style.Triggers>
+                              </Style>
+                            </TextBlock.Style>
+                          </TextBlock>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Time}" FontFamily="{StaticResource NumFont}" FontSize="15"
+                                   FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0"/>
+                        <Button Grid.Column="2" Style="{StaticResource Small}" Content="Ändern" Click="EditEntry_Click" VerticalAlignment="Center"
+                                ToolTip="Kunde, Zeit oder Tätigkeit ändern"/>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Border BorderBrush="{StaticResource InkBrush}" BorderThickness="0,2,0,0" Margin="0,10,0,0" Padding="0,10,0,0">
+                <DockPanel>
+                  <TextBlock x:Name="DayTotal" DockPanel.Dock="Right" FontFamily="{StaticResource NumFont}" FontSize="19" FontWeight="SemiBold"/>
+                  <TextBlock Text="Summe Tag" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </DockPanel>
+              </Border>
+
+              <StackPanel x:Name="DayPerKPanel" Margin="0,12,0,0">
+                <TextBlock Style="{StaticResource H2}" Text="JE KUNDE" Margin="0,0,0,4"/>
+                <ItemsControl x:Name="DayPerK">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Margin="0,2">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Time}" FontFamily="{StaticResource NumFont}"/>
+                        <TextBlock Text="{Binding Kunde}" TextWrapping="Wrap"/>
+                      </DockPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+
+              <TextBlock x:Name="EditHint" Style="{StaticResource Hint}" Margin="0,12,0,0"
+                         Text="Mit „Ändern“ kannst du Kunde, Zeit und Tätigkeit nachträglich korrigieren."/>
+            </StackPanel>
+          </Border>
+
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <DockPanel Margin="0,0,0,8">
+                <TextBlock x:Name="WeekKw" DockPanel.Dock="Right" Foreground="{StaticResource MutedBrush}" FontSize="12.5"/>
+                <TextBlock Style="{StaticResource H2}" Text="WOCHENÜBERSICHT"/>
+              </DockPanel>
+
+              <ItemsControl x:Name="WeekList">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                      <StackPanel>
+                        <Button Style="{StaticResource Flat}" Click="WeekDay_Click" ToolTip="Tag öffnen">
+                          <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Sum}" FontFamily="{StaticResource NumFont}"
+                                       Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold">
+                              <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                  <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                      <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                    </DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </TextBlock.Style>
+                            </TextBlock>
+                          </DockPanel>
+                        </Button>
+                        <TextBlock Text="keine Einträge" Style="{StaticResource Hint}" Margin="14,3,0,0"
+                                   Visibility="{Binding IsEmpty, Converter={StaticResource BoolVis}}"/>
+                        <ItemsControl ItemsSource="{Binding Entries}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                              <Button Style="{StaticResource Flat}" Click="WeekEntry_Click" Margin="14,4,0,0" ToolTip="Eintrag ändern">
+                                <StackPanel>
+                                  <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Time}" FontFamily="{StaticResource NumFont}"
+                                               Foreground="{StaticResource MutedBrush}"/>
+                                    <TextBlock Text="{Binding Kunde}" TextWrapping="Wrap"/>
+                                  </DockPanel>
+                                  <TextBlock Text="{Binding Notiz}" Foreground="{StaticResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap"
+                                             Visibility="{Binding HasNotiz, Converter={StaticResource BoolVis}}"/>
+                                </StackPanel>
+                              </Button>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Border BorderBrush="{StaticResource InkBrush}" BorderThickness="0,2,0,0" Margin="0,10,0,0" Padding="0,10,0,0">
+                <DockPanel>
+                  <TextBlock x:Name="WeekTotal2" DockPanel.Dock="Right" FontFamily="{StaticResource NumFont}" FontSize="19" FontWeight="SemiBold"/>
+                  <TextBlock Text="Summe Woche" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </DockPanel>
+              </Border>
+
+              <StackPanel x:Name="WeekPerKPanel" Margin="0,12,0,0">
+                <TextBlock Style="{StaticResource H2}" Text="JE KUNDE (WOCHE)" Margin="0,0,0,4"/>
+                <ItemsControl x:Name="WeekPerK">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Margin="0,2">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Time}" FontFamily="{StaticResource NumFont}"/>
+                        <TextBlock Text="{Binding Kunde}" TextWrapping="Wrap"/>
+                      </DockPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <TextBlock Style="{StaticResource H2}" Text="AUSWERTUNG ALS EXCEL SENDEN" Margin="0,0,0,12"/>
+              <DockPanel>
+                <TextBlock x:Name="RangeInfo" DockPanel.Dock="Right" FontFamily="{StaticResource NumFont}" Foreground="{StaticResource MutedBrush}"
+                           VerticalAlignment="Center" FontSize="12.5"/>
+                <StackPanel Orientation="Horizontal">
+                  <RadioButton x:Name="RangeDay" Content="Gewählter Tag" IsChecked="True" GroupName="Range" Checked="Range_Checked"
+                               VerticalContentAlignment="Center" Margin="0,0,18,0"/>
+                  <RadioButton x:Name="RangeWeek" Content="Ganze Woche" GroupName="Range" Checked="Range_Checked" VerticalContentAlignment="Center"/>
+                </StackPanel>
+              </DockPanel>
+
+              <Border Background="{StaticResource BgBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="8"
+                      Padding="12,9" Margin="0,12,0,0">
+                <DockPanel>
+                  <TextBlock Text="An:" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0"/>
+                  <TextBlock x:Name="AddrText" FontFamily="{StaticResource NumFont}" TextWrapping="Wrap"/>
+                </DockPanel>
+              </Border>
+
+              <WrapPanel Margin="0,12,0,0">
+                <Button x:Name="SendBtn" Style="{StaticResource Primary}" Content="Per Outlook senden" Click="Send_Click" Margin="0,0,8,8" MinWidth="180"/>
+                <Button x:Name="SaveXlsxBtn" Style="{StaticResource Ghost}" Content="Excel speichern …" Click="SaveXlsx_Click" Margin="0,0,8,8"/>
+                <Button Style="{StaticResource Ghost}" Content="Ordner öffnen" Click="OpenFolder_Click" Margin="0,0,8,8"/>
+              </WrapPanel>
+              <TextBlock x:Name="SendHint" Style="{StaticResource Hint}"/>
+            </StackPanel>
+          </Border>
+
+          <TextBlock x:Name="VersionText" Style="{StaticResource Hint}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</Window>

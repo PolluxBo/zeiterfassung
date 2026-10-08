@@ -1,0 +1,54 @@
+<Window x:Class="Zeiterfassung.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Einstellungen – Zeiterfassung" Width="560" Height="720" MinHeight="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+        Background="{StaticResource BgBrush}" FontFamily="Segoe UI" FontSize="14" Foreground="{StaticResource InkBrush}"
+        UseLayoutRounding="True">
+  <DockPanel Margin="18">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+      <Button Style="{StaticResource Ghost}" Content="Abbrechen" IsCancel="True" Margin="0,0,8,0"/>
+      <Button Style="{StaticResource Primary}" Content="Speichern" IsDefault="True" Click="Save_Click" MinWidth="120"/>
+    </StackPanel>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <Border Style="{StaticResource Card}">
+          <StackPanel>
+            <TextBlock Style="{StaticResource H2}" Text="AUSWERTUNG"/>
+            <TextBlock Text="Empfänger-E-Mail" Style="{StaticResource FieldLabel}"/>
+            <TextBox x:Name="EmailBox" Style="{StaticResource Field}"/>
+            <TextBlock Text="Dein Name (erscheint in der Excel-Datei und unter der Mail)" Style="{StaticResource FieldLabel}"/>
+            <TextBox x:Name="NameBox" Style="{StaticResource Field}"/>
+            <CheckBox x:Name="DirectBox" Margin="0,14,0,0" VerticalContentAlignment="Center"
+                      Content="Mail direkt senden, ohne sie vorher in Outlook anzuzeigen"/>
+          </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}">
+          <StackPanel>
+            <TextBlock Style="{StaticResource H2}" Text="KUNDEN VERWALTEN"/>
+            <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,10"
+                       Text="Beim Umbenennen wird der Name in allen bisherigen Einträgen mit geändert. „Entfernen“ nimmt den Kunden nur aus der Schnellauswahl, Einträge bleiben erhalten."/>
+            <StackPanel x:Name="KundenPanel"/>
+          </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}">
+          <StackPanel>
+            <TextBlock Style="{StaticResource H2}" Text="DATENSICHERUNG"/>
+            <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,10"
+                       Text="Sichert alle Einträge als Datei. Auch Sicherungen aus der iPhone-App können hier geladen werden. Vorhandene Einträge bleiben dabei erhalten."/>
+            <StackPanel Orientation="Horizontal">
+              <Button Style="{StaticResource Ghost}" Content="Sicherung erstellen …" Click="Backup_Click" Margin="0,0,8,0"/>
+              <Button Style="{StaticResource Ghost}" Content="Sicherung laden …" Click="Restore_Click"/>
+            </StackPanel>
+            <TextBlock x:Name="DataPath" Style="{StaticResource Hint}" Margin="0,10,0,0"/>
+          </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="Info" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>
