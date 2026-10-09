@@ -10,7 +10,7 @@
     <RootNamespace>Zeiterfassung</RootNamespace>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <Product>Zeiterfassung</Product>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <SatelliteResourceLanguages>de</SatelliteResourceLanguages>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>

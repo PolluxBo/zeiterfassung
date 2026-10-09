@@ -18,6 +18,8 @@ public partial class SettingsWindow : Window
         EmailBox.Text = store.Settings.Email;
         NameBox.Text = store.Settings.Name;
         DirectBox.IsChecked = store.Settings.DirectSend;
+        ClientBox.SelectedItem = ClientBox.Items.Cast<ComboBoxItem>()
+            .FirstOrDefault(i => (string)i.Tag == store.Settings.MailClient) ?? ClientBox.Items[0];
         DataPath.Text = "Daten liegen in: " + Store.Folder;
         BuildKunden();
         Loaded += (_, _) => EmailBox.Focus();
@@ -100,6 +102,24 @@ public partial class SettingsWindow : Window
         }
     }
 
+    string SelectedClient => (ClientBox.SelectedItem as ComboBoxItem)?.Tag as string ?? MailClients.Auto;
+
+    void ClientBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ClientInfo == null) return;
+        var setting = SelectedClient;
+        var resolved = Mail.Resolve(setting);
+        string name = resolved switch
+        {
+            MailClients.NewOutlook => "neues Outlook",
+            MailClients.ClassicOutlook => "klassisches Outlook",
+            _ => "Standard-Mailprogramm"
+        };
+        ClientInfo.Text = setting == MailClients.Auto ? $"Erkannt: {name}" : "";
+        DirectBox.IsEnabled = resolved == MailClients.ClassicOutlook;
+        if (!DirectBox.IsEnabled) DirectBox.IsChecked = false;
+    }
+
     void Save_Click(object sender, RoutedEventArgs e)
     {
         var email = EmailBox.Text.Trim();
@@ -112,6 +132,7 @@ public partial class SettingsWindow : Window
         store.Settings.Email = email;
         store.Settings.Name = NameBox.Text.Trim();
         store.Settings.DirectSend = DirectBox.IsChecked == true;
+        store.Settings.MailClient = SelectedClient;
         store.Save();
         DialogResult = true;
     }

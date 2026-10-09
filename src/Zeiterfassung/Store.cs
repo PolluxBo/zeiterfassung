@@ -21,6 +21,7 @@ public class AppSettings
     public string Name { get; set; } = "";
     public List<string> Kunden { get; set; } = new();
     public bool DirectSend { get; set; }
+    public string MailClient { get; set; } = MailClients.Auto;
 }
 
 /// <summary>Dateiformat – identisch mit der Sicherung der iPhone-App, damit Daten übernommen werden können.</summary>

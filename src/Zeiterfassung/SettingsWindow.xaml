@@ -20,8 +20,16 @@
             <TextBox x:Name="EmailBox" Style="{StaticResource Field}"/>
             <TextBlock Text="Dein Name (erscheint in der Excel-Datei und unter der Mail)" Style="{StaticResource FieldLabel}"/>
             <TextBox x:Name="NameBox" Style="{StaticResource Field}"/>
+            <TextBlock Text="Mailprogramm" Style="{StaticResource FieldLabel}"/>
+            <ComboBox x:Name="ClientBox" FontSize="14" Padding="8,6" SelectionChanged="ClientBox_SelectionChanged">
+              <ComboBoxItem Tag="auto">Automatisch erkennen</ComboBoxItem>
+              <ComboBoxItem Tag="neu">Neues Outlook</ComboBoxItem>
+              <ComboBoxItem Tag="klassisch">Klassisches Outlook</ComboBoxItem>
+              <ComboBoxItem Tag="anderes">Anderes Mailprogramm (Anhang selbst einfügen)</ComboBoxItem>
+            </ComboBox>
+            <TextBlock x:Name="ClientInfo" Style="{StaticResource Hint}" Margin="0,6,0,0"/>
             <CheckBox x:Name="DirectBox" Margin="0,14,0,0" VerticalContentAlignment="Center"
-                      Content="Mail direkt senden, ohne sie vorher in Outlook anzuzeigen"/>
+                      Content="Mail direkt senden, ohne sie vorher anzuzeigen (nur klassisches Outlook)"/>
           </StackPanel>
         </Border>
 

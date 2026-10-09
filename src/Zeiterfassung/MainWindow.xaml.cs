@@ -151,9 +151,15 @@ public partial class MainWindow : Window
         AddrText.Text = hasMail ? store.Settings.Email : "keine Adresse hinterlegt (Einstellungen)";
         SendBtn.IsEnabled = es.Count > 0;
         SaveXlsxBtn.IsEnabled = es.Count > 0;
-        SendHint.Text = store.Settings.DirectSend
-            ? "Die Mail wird ohne Vorschau direkt über Outlook gesendet."
-            : "Outlook öffnet eine fertige Mail mit Empfänger, Betreff und Excel-Anhang. Du klickst nur noch auf Senden.";
+        var client = Mail.Resolve(store.Settings.MailClient);
+        SendBtn.Content = client == MailClients.Other ? "Per E-Mail senden" : "Per Outlook senden";
+        SendHint.Text = client switch
+        {
+            MailClients.ClassicOutlook when store.Settings.DirectSend => "Die Mail wird ohne Vorschau direkt über das klassische Outlook gesendet.",
+            MailClients.ClassicOutlook => "Das klassische Outlook öffnet eine fertige Mail mit Empfänger, Betreff und Excel-Anhang. Du klickst nur noch auf Senden.",
+            MailClients.NewOutlook => "Das neue Outlook öffnet einen fertigen Entwurf mit Empfänger, Betreff und Excel-Anhang. Du klickst nur noch auf Senden.",
+            _ => "Dein Mailprogramm öffnet eine Mail mit Empfänger und Betreff. Die Excel-Datei wird im Explorer markiert und muss in die Mail gezogen werden."
+        };
     }
 
     void SetDur(int m)
@@ -419,19 +425,56 @@ public partial class MainWindow : Window
         var path = WriteExcel(Path.Combine(ExportFolder, fileName));
         if (path == null) return;
 
+        var body = MailBody(keys, period);
+        var client = Mail.Resolve(store.Settings.MailClient);
         Mouse.OverrideCursor = Cursors.Wait;
-        var (ok, error) = Mail.ViaOutlook(email, subject, MailBody(keys, period), path, store.Settings.DirectSend);
-        Mouse.OverrideCursor = null;
-
-        if (ok)
+        try
         {
-            ShowStatus(store.Settings.DirectSend ? $"Gesendet an {email}" : "Mail in Outlook geöffnet");
-            return;
+            if (client == MailClients.ClassicOutlook)
+            {
+                var (ok, error) = Mail.ViaClassicOutlook(email, subject, body, path, store.Settings.DirectSend);
+                if (ok)
+                {
+                    ShowStatus(store.Settings.DirectSend ? $"Gesendet an {email}" : "Mail im klassischen Outlook geöffnet");
+                    return;
+                }
+                // Klassisches Outlook ist auf das neue umgestellt oder startet nicht – dann das neue versuchen.
+                if (Mail.HasNewOutlook && Mail.ViaNewOutlook(email, subject, body, path).Ok)
+                {
+                    ShowStatus("Entwurf im neuen Outlook geöffnet");
+                    return;
+                }
+                FallbackWithNotice(email, subject, body, path, "Das klassische Outlook konnte die Mail nicht erstellen.\n" + error);
+                return;
+            }
+
+            if (client == MailClients.NewOutlook)
+            {
+                var (ok, error) = Mail.ViaNewOutlook(email, subject, body, path);
+                if (ok)
+                {
+                    ShowStatus("Entwurf im neuen Outlook geöffnet – bitte auf Senden klicken");
+                    return;
+                }
+                FallbackWithNotice(email, subject, body, path, "Das neue Outlook konnte nicht gestartet werden.\n" + error);
+                return;
+            }
+
+            Mail.Fallback(email, subject, body, path);
+            ShowStatus("Mailprogramm geöffnet – Excel-Datei bitte in die Mail ziehen");
         }
-        Mail.Fallback(email, subject, MailBody(keys, period), path);
+        finally
+        {
+            Mouse.OverrideCursor = null;
+        }
+    }
+
+    void FallbackWithNotice(string email, string subject, string body, string path, string reason)
+    {
+        Mail.Fallback(email, subject, body, path);
         MessageBox.Show(this,
-            "Outlook konnte die Mail nicht erstellen.\n" + error +
-            "\n\nDas Standard-Mailprogramm wurde geöffnet und die Excel-Datei im Explorer markiert. Bitte die Datei in die Mail ziehen.",
+            reason + "\n\nDas Standard-Mailprogramm wurde geöffnet und die Excel-Datei im Explorer markiert. " +
+            "Bitte die Datei in die Mail ziehen.\n\nUnter Einstellungen → Mailprogramm kannst du festlegen, welches Outlook verwendet wird.",
             "Zeiterfassung", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
