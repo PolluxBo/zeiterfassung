@@ -122,12 +122,22 @@ public partial class SettingsWindow : Window
         {
             Title = "Sicherung erstellen",
             FileName = $"Zeiterfassung_Sicherung_{DateTime.Today:yyyy-MM-dd}.json",
+            InitialDirectory = KnownFolders.Downloads,
             Filter = "Sicherung (*.json)|*.json",
             DefaultExt = ".json"
         };
         if (dlg.ShowDialog(this) != true) return;
-        store.ExportTo(dlg.FileName);
-        Info.Text = "Sicherung gespeichert: " + dlg.FileName;
+        try
+        {
+            store.ExportTo(dlg.FileName);
+            Info.Text = "Sicherung gespeichert: " + dlg.FileName;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(this,
+                "Windows hat das Speichern in diesem Ordner blockiert (z. B. durch den „Überwachten Ordnerzugriff“). Bitte einen anderen Ordner wählen, z. B. Downloads.",
+                "Zeiterfassung", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     void Restore_Click(object sender, RoutedEventArgs e)

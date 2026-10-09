@@ -28,7 +28,7 @@ Tastatur: `Strg+S` speichert den Eintrag, `Esc` bricht das Bearbeiten ab.
 | Was | Wo |
 | --- | --- |
 | Daten | `%APPDATA%\Zeiterfassung\daten.json` |
-| Excel-Auswertungen | `Dokumente\Zeiterfassung\` |
+| Excel-Auswertungen | `Downloads\Zeiterfassung\` |
 
 ## Entwicklung
 
@@ -47,3 +47,7 @@ dotnet publish src/Zeiterfassung -c Release -r win-x64 --self-contained true -p:
 Ein Tag `v*` (z. B. `v1.0.1`) baut über GitHub Actions automatisch ein Release mit der `.exe`.
 
 Excel-Export mit [ClosedXML](https://github.com/ClosedXML/ClosedXML) (MIT).
+
+## Hinweis zu Windows-Sicherheit
+
+Ist der **Überwachte Ordnerzugriff** (Ransomware-Schutz) aktiv, blockiert Windows das Schreiben unsignierter Programme in „Dokumente“, „Desktop“ und „Bilder“. Die App legt Auswertungen deshalb unter **Downloads\Zeiterfassung** ab. Wer trotzdem in „Dokumente“ speichern möchte, gibt die App frei unter *Windows-Sicherheit → Viren- & Bedrohungsschutz → Ransomware-Schutz → App durch überwachten Ordnerzugriff zulassen*.

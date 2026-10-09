@@ -32,8 +32,8 @@ public partial class MainWindow : Window
     int dur = 60;
     string? editId;
 
-    static string ExportFolder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Zeiterfassung");
+    // Bewusst nicht „Dokumente“: Der Überwachte Ordnerzugriff von Windows blockiert dort unsignierte Programme.
+    static string ExportFolder => Path.Combine(KnownFolders.Downloads, "Zeiterfassung");
 
     public MainWindow()
     {
@@ -366,11 +366,41 @@ public partial class MainWindow : Window
             ExcelExport.Write(path, keys, store, period);
             return path;
         }
-        catch (IOException)
+        catch (IOException ex) when (IsFileLocked(ex))
         {
             MessageBox.Show(this, $"Die Datei „{Path.GetFileName(path)}“ ist noch geöffnet (z. B. in Excel). Bitte schließen und erneut versuchen.",
                 "Zeiterfassung", MessageBoxButton.OK, MessageBoxImage.Warning);
             return null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ShowBlocked(Path.GetDirectoryName(path)!);
+            return null;
+        }
+    }
+
+    // 0x80070020 = Freigabeverletzung, 0x80070021 = Sperrverletzung
+    static bool IsFileLocked(IOException ex) => (ex.HResult & 0xFFFF) is 0x20 or 0x21;
+
+    void ShowBlocked(string folder) =>
+        MessageBox.Show(this,
+            $"Windows hat das Speichern im Ordner\n{folder}\nblockiert.\n\n" +
+            "Meist ist das der „Überwachte Ordnerzugriff“ von Windows-Sicherheit, der z. B. „Dokumente“ und „Desktop“ schützt. " +
+            "Bitte einen anderen Ordner wählen (z. B. Downloads) oder Zeiterfassung unter Windows-Sicherheit → Viren- & Bedrohungsschutz → " +
+            "Ransomware-Schutz → „App durch überwachten Ordnerzugriff zulassen“ freigeben.",
+            "Zeiterfassung", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+    bool EnsureExportFolder()
+    {
+        try
+        {
+            Directory.CreateDirectory(ExportFolder);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ShowBlocked(ExportFolder);
+            return false;
         }
     }
 
@@ -408,7 +438,7 @@ public partial class MainWindow : Window
     void SaveXlsx_Click(object sender, RoutedEventArgs e)
     {
         var (_, _, fileName, _) = CurrentRange();
-        Directory.CreateDirectory(ExportFolder);
+        EnsureExportFolder();
         var dlg = new Microsoft.Win32.SaveFileDialog
         {
             Title = "Excel-Datei speichern",
@@ -426,7 +456,7 @@ public partial class MainWindow : Window
 
     void OpenFolder_Click(object sender, RoutedEventArgs e)
     {
-        Directory.CreateDirectory(ExportFolder);
+        if (!EnsureExportFolder()) return;
         Process.Start("explorer.exe", $"\"{ExportFolder}\"");
     }
 
