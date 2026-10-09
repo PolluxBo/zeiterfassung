@@ -18,6 +18,8 @@ public partial class SettingsWindow : Window
         EmailBox.Text = store.Settings.Email;
         NameBox.Text = store.Settings.Name;
         DirectBox.IsChecked = store.Settings.DirectSend;
+        exportFolder = store.Settings.ExportFolder;
+        FolderBox.Text = FolderChoice.ExportFolder(store.Settings);
         ClientBox.SelectedItem = ClientBox.Items.Cast<ComboBoxItem>()
             .FirstOrDefault(i => (string)i.Tag == store.Settings.MailClient) ?? ClientBox.Items[0];
         DataPath.Text = "Daten liegen in: " + Store.Folder;
@@ -102,6 +104,22 @@ public partial class SettingsWindow : Window
         }
     }
 
+    string exportFolder = "";
+
+    void ChooseFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var folder = FolderChoice.Pick(this, FolderBox.Text);
+        if (folder == null) return;
+        exportFolder = folder;
+        FolderBox.Text = folder;
+    }
+
+    void DefaultFolder_Click(object sender, RoutedEventArgs e)
+    {
+        exportFolder = "";
+        FolderBox.Text = FolderChoice.DefaultExportFolder;
+    }
+
     string SelectedClient => (ClientBox.SelectedItem as ComboBoxItem)?.Tag as string ?? MailClients.Auto;
 
     void ClientBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -133,6 +151,7 @@ public partial class SettingsWindow : Window
         store.Settings.Name = NameBox.Text.Trim();
         store.Settings.DirectSend = DirectBox.IsChecked == true;
         store.Settings.MailClient = SelectedClient;
+        store.Settings.ExportFolder = exportFolder;
         store.Save();
         DialogResult = true;
     }

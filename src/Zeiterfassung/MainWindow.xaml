@@ -300,6 +300,16 @@
                 </DockPanel>
               </Border>
 
+              <Border Background="{StaticResource BgBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="8"
+                      Padding="12,6,6,6" Margin="0,8,0,0">
+                <DockPanel>
+                  <Button DockPanel.Dock="Right" Style="{StaticResource Small}" Content="Ordner wählen …" Click="ChooseFolder_Click"
+                          ToolTip="Ablageordner für die Excel-Dateien festlegen"/>
+                  <TextBlock Text="Ablage:" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                  <TextBlock x:Name="FolderText" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                </DockPanel>
+              </Border>
+
               <WrapPanel Margin="0,12,0,0">
                 <Button x:Name="SendBtn" Style="{StaticResource Primary}" Content="Per Outlook senden" Click="Send_Click" Margin="0,0,8,8" MinWidth="180"/>
                 <Button x:Name="SaveXlsxBtn" Style="{StaticResource Ghost}" Content="Excel speichern …" Click="SaveXlsx_Click" Margin="0,0,8,8"/>

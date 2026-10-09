@@ -32,8 +32,8 @@ public partial class MainWindow : Window
     int dur = 60;
     string? editId;
 
-    // Bewusst nicht „Dokumente“: Der Überwachte Ordnerzugriff von Windows blockiert dort unsignierte Programme.
-    static string ExportFolder => Path.Combine(KnownFolders.Downloads, "Zeiterfassung");
+    // Standard ist DownloadsZeiterfassung (nicht „Dokumente“: dort blockiert der Überwachte Ordnerzugriff unsignierte Programme).
+    string ExportFolder => FolderChoice.ExportFolder(store.Settings);
 
     public MainWindow()
     {
@@ -151,6 +151,7 @@ public partial class MainWindow : Window
         AddrText.Text = hasMail ? store.Settings.Email : "keine Adresse hinterlegt (Einstellungen)";
         SendBtn.IsEnabled = es.Count > 0;
         SaveXlsxBtn.IsEnabled = es.Count > 0;
+        FolderText.Text = ExportFolder;
         var client = Mail.Resolve(store.Settings.MailClient);
         SendBtn.Content = client == MailClients.Other ? "Per E-Mail senden" : "Per Outlook senden";
         SendHint.Text = client switch
@@ -501,6 +502,16 @@ public partial class MainWindow : Window
     {
         if (!EnsureExportFolder()) return;
         Process.Start("explorer.exe", $"\"{ExportFolder}\"");
+    }
+
+    void ChooseFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var folder = FolderChoice.Pick(this, ExportFolder);
+        if (folder == null) return;
+        store.Settings.ExportFolder = folder;
+        store.Save();
+        RefreshSend();
+        ShowStatus("Ablageordner geändert");
     }
 
     // ---------- Einstellungen ----------

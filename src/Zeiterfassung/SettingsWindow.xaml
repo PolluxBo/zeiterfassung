@@ -28,6 +28,14 @@
               <ComboBoxItem Tag="anderes">Anderes Mailprogramm (Anhang selbst einfügen)</ComboBoxItem>
             </ComboBox>
             <TextBlock x:Name="ClientInfo" Style="{StaticResource Hint}" Margin="0,6,0,0"/>
+            <TextBlock Text="Ablageordner für die Excel-Dateien" Style="{StaticResource FieldLabel}"/>
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Style="{StaticResource Ghost}" Content="Standard" Click="DefaultFolder_Click" Padding="10,6"
+                      Margin="6,0,0,0" ToolTip="Zurück zu Downloads\Zeiterfassung"/>
+              <Button DockPanel.Dock="Right" Style="{StaticResource Ghost}" Content="Ändern …" Click="ChooseFolder_Click" Padding="10,6" Margin="6,0,0,0"/>
+              <TextBox x:Name="FolderBox" Style="{StaticResource Field}" IsReadOnly="True" FontSize="13"/>
+            </DockPanel>
+
             <CheckBox x:Name="DirectBox" Margin="0,14,0,0" VerticalContentAlignment="Center"
                       Content="Mail direkt senden, ohne sie vorher anzuzeigen (nur klassisches Outlook)"/>
           </StackPanel>
