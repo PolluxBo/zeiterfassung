@@ -28,7 +28,7 @@ Tastatur: `Strg+S` speichert den Eintrag, `Esc` bricht das Bearbeiten ab.
 | Was | Wo |
 | --- | --- |
 | Daten | `%APPDATA%\Zeiterfassung\daten.json` |
-| Excel-Auswertungen | `Downloads\Zeiterfassung\` |
+| Excel-Auswertungen | frei wählbar („Ordner wählen …“ im Bereich Auswertung oder in den Einstellungen), Standard: `Downloads\Zeiterfassung\` |
 
 ## Entwicklung
 
